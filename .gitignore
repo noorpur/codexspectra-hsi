@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+data/raw/
+data/processed/
+models/*.joblib
+models/*.pt
+outputs/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/

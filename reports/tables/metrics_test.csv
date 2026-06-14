@@ -1,0 +1,2 @@
+model_path,accuracy,macro_f1,weighted_f1,macro_f1_mean,macro_f1_ci_low,macro_f1_ci_high
+models/best_tuned_random_forest.joblib,1.0,1.0,1.0,1.0,1.0,1.0

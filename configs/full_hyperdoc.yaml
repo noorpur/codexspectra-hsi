@@ -1,0 +1,46 @@
+project:
+  name: codexspectra-hsi-full-hyperdoc
+  seed: 1337
+  output_dir: outputs/full_hyperdoc
+
+data:
+  raw_root: data/raw/hyperdoc
+  processed_root: data/processed/hyperdoc_full
+  manifest_path: data/processed/hyperdoc_full/manifest.csv
+  feature_table_path: data/processed/hyperdoc_full/features.parquet
+  label_column: label
+  group_column: group_id
+  cube_extensions: [".mat", ".npy", ".npz", ".bil"]
+  max_pixels_per_cube: 10000
+  min_pixels_per_class: 250
+
+spectral:
+  wavelength_min_nm: 400
+  wavelength_max_nm: 1700
+  smoothing_window: 15
+  smoothing_polyorder: 2
+  use_snv: true
+  use_derivatives: true
+  pca_components: 48
+
+split:
+  test_size: 0.20
+  val_size: 0.20
+  grouped: true
+  split_seed: 2026
+
+training:
+  metric: macro_f1
+  n_jobs: -1
+  optuna_trials: 80
+  batch_size: 256
+  epochs: 100
+  lr: 0.001
+  weight_decay: 0.00005
+  patience: 15
+  device: auto
+
+reporting:
+  figures_dir: reports/figures
+  tables_dir: reports/tables
+  model_dir: models

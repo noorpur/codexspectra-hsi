@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codexspectra-hsi"
+version = "0.1.0"
+description = "Research-grade hyperspectral learning for historical document material-state mapping."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "Noor Ul Ain Zahra", email = "znoorulain13@gmail.com"}]
+license = {text = "MIT"}
+dependencies = [
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "scipy>=1.10",
+  "scikit-learn>=1.3",
+  "matplotlib>=3.7",
+  "pyyaml>=6.0",
+  "joblib>=1.3",
+  "tqdm>=4.66",
+    "tabulate>=0.9",
+  "torch>=2.1",
+  "optuna>=3.5",
+  "seaborn>=0.13; platform_system == 'Never'"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.4",
+  "ruff>=0.3",
+  "mypy>=1.8",
+  "pre-commit>=3.6"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "scripts", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

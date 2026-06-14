@@ -1,0 +1,4 @@
+number,value,datetime_start,datetime_complete,duration,params_max_depth,params_max_features,params_min_samples_leaf,params_n_estimators,state
+0,1.0,2026-06-14 21:51:33.470099,2026-06-14 21:51:34.661307,0 days 00:00:01.191208,21,log2,2,800,COMPLETE
+1,1.0,2026-06-14 21:51:34.661587,2026-06-14 21:51:34.961163,0 days 00:00:00.299576,5,log2,5,200,COMPLETE
+2,1.0,2026-06-14 21:51:34.961297,2026-06-14 21:51:35.547539,0 days 00:00:00.586242,9,log2,4,400,COMPLETE

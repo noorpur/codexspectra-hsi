@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it and the original datasets."
+title: "CodexSpectra-HSI: Multiscale hyperspectral learning for historical document material-state mapping"
+authors:
+  - family-names: "Zahra"
+    given-names: "Noor Ul Ain"
+version: "0.1.0"
+date-released: "2026-06-14"
+license: "MIT"
+repository-code: "https://github.com/znoorulain13/codexspectra-hsi"
+references:
+  - type: article
+    title: "Hyperspectral dataset of historical documents and mock-ups from 400 to 1700 nm (HYPERDOC)"
+    authors:
+      - family-names: "López-Baldomero"
+        given-names: "Ana Belén"
+    journal: "Scientific Data"
+    year: 2025

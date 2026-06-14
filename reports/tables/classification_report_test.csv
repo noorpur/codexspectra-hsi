@@ -1,0 +1,7 @@
+,precision,recall,f1-score,support
+aged,1.0,1.0,1.0,160.0
+ink,1.0,1.0,1.0,160.0
+substrate,1.0,1.0,1.0,160.0
+accuracy,1.0,1.0,1.0,1.0
+macro avg,1.0,1.0,1.0,480.0
+weighted avg,1.0,1.0,1.0,480.0

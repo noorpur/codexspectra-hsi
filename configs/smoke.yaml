@@ -1,0 +1,46 @@
+project:
+  name: codexspectra-hsi-smoke
+  seed: 1337
+  output_dir: outputs/smoke
+
+data:
+  raw_root: data/raw/hyperdoc
+  processed_root: data/processed/hyperdoc_smoke
+  manifest_path: data/processed/hyperdoc_smoke/manifest.csv
+  feature_table_path: data/processed/hyperdoc_smoke/features.csv
+  label_column: label
+  group_column: group_id
+  cube_extensions: [".mat", ".npy", ".npz", ".bil"]
+  max_pixels_per_cube: 80
+  min_pixels_per_class: 10
+
+spectral:
+  wavelength_min_nm: 400
+  wavelength_max_nm: 1700
+  smoothing_window: 7
+  smoothing_polyorder: 2
+  use_snv: true
+  use_derivatives: true
+  pca_components: 12
+
+split:
+  test_size: 0.20
+  val_size: 0.20
+  grouped: true
+  split_seed: 2026
+
+training:
+  metric: macro_f1
+  n_jobs: -1
+  optuna_trials: 3
+  batch_size: 32
+  epochs: 4
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 3
+  device: auto
+
+reporting:
+  figures_dir: reports/figures
+  tables_dir: reports/tables
+  model_dir: models
