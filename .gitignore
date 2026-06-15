@@ -10,3 +10,21 @@ outputs/
 *.egg-info/
 .pytest_cache/
 .ruff_cache/
+
+# Generated experiment outputs
+reports/experiment_report.md
+reports/archive_real_unbalanced_run/
+reports/tables/*.csv
+reports/tables/*.json
+reports/figures/*.png
+reports/*.zip
+
+# Trained models
+models/*.joblib
+models/*.pt
+models/*.pth
+
+# Local raw/processed data
+data/raw/hyperdoc/
+data/processed/
+outputs/
