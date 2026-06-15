@@ -1,0 +1,5 @@
+label,original_train,balanced_train,original_train_val,balanced_train_val
+Ink,52480,5280,67520,6560
+Pencil,6720,5280,8000,6560
+Pigment,5280,5280,6560,6560
+Substrate,16960,5280,21120,6560

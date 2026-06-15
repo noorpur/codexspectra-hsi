@@ -1,0 +1,4 @@
+split,Ink,Pencil,Pigment,Substrate
+test,15360,2400,1440,5600
+train,52480,6720,5280,16960
+val,15040,1280,1280,4160
