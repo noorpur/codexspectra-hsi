@@ -2,7 +2,7 @@
 
 **Multiscale hyperspectral learning for historical document materials, ageing proxies, and conservation-state mapping**
 
-I built this repository as a research-grade bridge between my earlier work in biomedical imaging, biological signal modelling, structural/protein validation, interpretable AI, and reproducible ML systems. My previous projects already sit at the intersection of noisy biological data, multimodal image/signal pipelines, generative modelling, model auditing, and careful validation. This project transfers that same computational style into non-invasive spectral imaging for cultural heritage materials.
+I built this repository as a research-grade bridge between my earlier work in biomedical imaging, biological signal modelling, structural/protein validation, interpretable AI, and reproducible ML systems. My previous projects already sit at the intersection of noisy biological data, multimodal image/signal pipelines, generative modelling, model auditing, and careful validation. This project transfers that same computational style into non-invasive spectral imaging for materials.
 
 The core idea is simple: historical documents are material-biological-chemical systems, not just images. A manuscript surface contains spectral signatures from support material, inks, pigments, degradation products, conservation treatments, acquisition artefacts, and spatial heterogeneity. I therefore treat hyperspectral cubes as structured scientific measurements rather than ordinary photographs.
 
