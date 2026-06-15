@@ -227,3 +227,15 @@ This repository is built so that results are reproducible without pretending tha
 ## License
 
 Code is released under the MIT License. Dataset usage follows the licenses and terms of the original data providers.
+
+## Results artifacts
+
+Curated result figures, tables, and qualitative overlay panels are included under `docs/`.
+
+- Analysis report: [`docs/ANALYSIS_REPORT.md`](docs/ANALYSIS_REPORT.md)
+- Results summary: [`docs/RESULTS_SUMMARY.md`](docs/RESULTS_SUMMARY.md)
+- Figures: [`docs/figures/`](docs/figures/)
+- Tables: [`docs/tables/`](docs/tables/)
+- Prediction overlays: [`docs/overlays/`](docs/overlays/)
+
+The full raw HYPERDOC dataset, processed feature matrices, trained models, and generated local report archives are intentionally excluded from GitHub to keep the repository lightweight and reproducible.
