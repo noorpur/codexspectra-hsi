@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+from __future__ import annotations
+
+import argparse
 from pathlib import Path
 
 import joblib
@@ -10,45 +14,42 @@ from sklearn.preprocessing import normalize
 from codexspectra.utils.config import load_config
 
 
-def numeric_feature_cols(df):
-    blocked = {
-        "cube_id", "group_id", "label", "pixel_id", "split",
-        "path", "checksum", "source_file", "material", "sample_id"
-    }
-    return [
-        c for c in df.columns
-        if c not in blocked and pd.api.types.is_numeric_dtype(df[c])
-    ]
+def load_model_and_features(model_path: Path, df: pd.DataFrame):
+    model = joblib.load(model_path)
+
+    if hasattr(model, "feature_names_in_"):
+        feature_cols = list(model.feature_names_in_)
+    else:
+        feature_cols = [c for c in df.columns if c.startswith("f")]
+
+    missing = [c for c in feature_cols if c not in df.columns]
+    if missing:
+        raise ValueError(f"Model expects missing feature columns: {missing[:10]}")
+
+    return model, feature_cols
 
 
-def main():
-    import argparse
-
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
+    parser.add_argument("--model", default="best_tuned_random_forest.joblib")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
-    feature_path = Path(cfg["data"]["feature_table_path"])
+    df = pd.read_csv(cfg["data"]["feature_table_path"])
 
-    figures_dir = Path("reports/figures")
-    tables_dir = Path("reports/tables")
-    model_dir = Path("models")
+    label_col = cfg["data"]["label_column"]
+    figures_dir = Path(cfg["reporting"]["figures_dir"])
+    tables_dir = Path(cfg["reporting"]["tables_dir"])
+    model_path = Path(cfg["reporting"]["model_dir"]) / args.model
 
     figures_dir.mkdir(parents=True, exist_ok=True)
     tables_dir.mkdir(parents=True, exist_ok=True)
 
-    df = pd.read_csv(feature_path)
-    feature_cols = numeric_feature_cols(df)
-
-    model_path = model_dir / "best_tuned_random_forest.joblib"
-    if not model_path.exists():
-        raise FileNotFoundError(f"Missing model: {model_path}")
-
-    model = joblib.load(model_path)
+    model, feature_cols = load_model_and_features(model_path, df)
 
     # Class balance
-    counts = df["label"].value_counts().sort_index()
+    counts = df[label_col].value_counts().sort_index()
     counts.to_csv(tables_dir / "class_balance.csv", header=["n"])
 
     plt.figure(figsize=(8, 5))
@@ -62,7 +63,7 @@ def main():
     plt.close()
 
     # Split balance
-    split_counts = pd.crosstab(df["split"], df["label"])
+    split_counts = pd.crosstab(df["split"], df[label_col])
     split_counts.to_csv(tables_dir / "split_class_balance.csv")
 
     split_counts.plot(kind="bar", figsize=(9, 6))
@@ -74,22 +75,10 @@ def main():
     plt.savefig(figures_dir / "split_class_balance.png", dpi=220)
     plt.close()
 
-    # Mean feature profile
-    means = df.groupby("label")[feature_cols].mean().T
-    means.to_csv(tables_dir / "mean_feature_profile_by_class.csv")
-
-    means.plot(figsize=(11, 6))
-    plt.title("Mean spectral feature profile by class")
-    plt.xlabel("Feature index")
-    plt.ylabel("Mean feature value")
-    plt.tight_layout()
-    plt.savefig(figures_dir / "spectral_means_by_class.png", dpi=220)
-    plt.close()
-
     # PCA
     sample = df.sample(min(len(df), 20000), random_state=42)
     X = sample[feature_cols]
-    y = sample["label"].astype(str)
+    y = sample[label_col].astype(str)
 
     pca = PCA(n_components=2, random_state=42)
     z = pca.fit_transform(X)
@@ -99,7 +88,7 @@ def main():
         "explained_variance_ratio": pca.explained_variance_ratio_,
     }).to_csv(tables_dir / "pca_explained_variance.csv", index=False)
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(9, 7))
     for lab in sorted(y.unique()):
         idx = y == lab
         plt.scatter(z[idx, 0], z[idx, 1], s=6, alpha=0.45, label=lab)
@@ -111,45 +100,47 @@ def main():
     plt.savefig(figures_dir / "pca_latent_space.png", dpi=220)
     plt.close()
 
-    # Overfitting diagnostic
-    perf_rows = []
-    for split in ["train", "val", "test"]:
-        sdf = df[df["split"] == split]
-        pred = model.predict(sdf[feature_cols])
-        perf_rows.append({
-            "split": split,
-            "n": len(sdf),
-            "macro_f1": f1_score(sdf["label"], pred, average="macro"),
-            "weighted_f1": f1_score(sdf["label"], pred, average="weighted"),
-        })
+    # Mean feature profile
+    means = df.groupby(label_col)[feature_cols].mean().T
+    means.to_csv(tables_dir / "mean_feature_profile_by_class.csv")
 
-    perf = pd.DataFrame(perf_rows)
-    perf.to_csv(tables_dir / "overfitting_diagnostic.csv", index=False)
-
-    plt.figure(figsize=(7, 5))
-    plt.plot(perf["split"], perf["macro_f1"], marker="o", label="Macro-F1")
-    plt.plot(perf["split"], perf["weighted_f1"], marker="o", label="Weighted-F1")
-    plt.ylim(0, 1.05)
-    plt.title("Overfitting diagnostic by split")
-    plt.xlabel("Split")
-    plt.ylabel("F1 score")
-    plt.legend()
+    means.plot(figsize=(11, 6))
+    plt.title("Mean spectral feature profile by class")
+    plt.xlabel("Feature")
+    plt.ylabel("Mean feature value")
     plt.tight_layout()
-    plt.savefig(figures_dir / "overfitting_diagnostic.png", dpi=220)
+    plt.savefig(figures_dir / "spectral_means_by_class.png", dpi=220)
     plt.close()
 
-    # Test metrics
-    test = df[df["split"] == "test"]
-    y_true = test["label"]
+    # Test predictions
+    test = df[df["split"] == "test"].copy()
+    y_true = test[label_col].astype(str)
     y_pred = model.predict(test[feature_cols])
     labels = sorted(y_true.unique())
 
+    # Counts confusion matrix
     cm = confusion_matrix(y_true, y_pred, labels=labels)
-    cm_norm = normalize(cm, norm="l1", axis=1)
-
     pd.DataFrame(cm, index=labels, columns=labels).to_csv(
         tables_dir / "confusion_matrix_test_counts.csv"
     )
+
+    plt.figure(figsize=(8, 7))
+    plt.imshow(cm, aspect="auto")
+    plt.title("Test confusion matrix")
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.xticks(range(len(labels)), labels, rotation=45, ha="right")
+    plt.yticks(range(len(labels)), labels)
+    plt.colorbar()
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            plt.text(j, i, str(cm[i, j]), ha="center", va="center")
+    plt.tight_layout()
+    plt.savefig(figures_dir / "confusion_matrix_test.png", dpi=220)
+    plt.close()
+
+    # Normalized confusion matrix
+    cm_norm = normalize(cm, norm="l1", axis=1)
     pd.DataFrame(cm_norm, index=labels, columns=labels).to_csv(
         tables_dir / "confusion_matrix_test_normalized.csv"
     )
@@ -169,13 +160,15 @@ def main():
     plt.savefig(figures_dir / "confusion_matrix_test_normalized.png", dpi=220)
     plt.close()
 
-    report = classification_report(y_true, y_pred, output_dict=True, zero_division=0)
-    report_df = pd.DataFrame(report).T
-    report_df.to_csv(tables_dir / "classification_report_test_expanded.csv")
+    # Per-class metrics
+    report = pd.DataFrame(
+        classification_report(y_true, y_pred, output_dict=True, zero_division=0)
+    ).T
+    report.to_csv(tables_dir / "classification_report_test_expanded.csv")
 
-    class_rows = report_df.loc[
-        [x for x in labels if x in report_df.index],
-        ["precision", "recall", "f1-score"]
+    class_rows = report.loc[
+        [x for x in labels if x in report.index],
+        ["precision", "recall", "f1-score"],
     ]
 
     class_rows.plot(kind="bar", figsize=(9, 6))
@@ -205,30 +198,31 @@ def main():
         plt.savefig(figures_dir / "feature_importance.png", dpi=220)
         plt.close()
 
-    # Per-group performance
-    group_rows = []
-    for group_id, gdf in test.groupby("group_id"):
-        pred = model.predict(gdf[feature_cols])
-        group_rows.append({
-            "group_id": group_id,
-            "n": len(gdf),
-            "true_label": gdf["label"].mode().iloc[0],
-            "macro_f1": f1_score(gdf["label"], pred, average="macro"),
-            "accuracy": (gdf["label"].to_numpy() == pred).mean(),
+    # Honest-ish split diagnostic using the selected model
+    rows = []
+    for split in ["train", "val", "test"]:
+        sdf = df[df["split"] == split]
+        pred = model.predict(sdf[feature_cols])
+        rows.append({
+            "split": split,
+            "n": len(sdf),
+            "macro_f1": f1_score(sdf[label_col], pred, average="macro", zero_division=0),
+            "weighted_f1": f1_score(sdf[label_col], pred, average="weighted", zero_division=0),
         })
 
-    group_perf = pd.DataFrame(group_rows).sort_values("macro_f1")
-    group_perf.to_csv(tables_dir / "per_group_test_performance.csv", index=False)
+    perf = pd.DataFrame(rows)
+    perf.to_csv(tables_dir / "overfitting_diagnostic.csv", index=False)
 
-    plot_group = group_perf.head(40).iloc[::-1]
-    plt.figure(figsize=(9, 10))
-    plt.barh(plot_group["group_id"].astype(str), plot_group["macro_f1"])
-    plt.xlim(0, 1.05)
-    plt.title("Lowest-performing test document groups")
-    plt.xlabel("Macro-F1")
-    plt.ylabel("Group ID")
+    plt.figure(figsize=(8, 5))
+    plt.plot(perf["split"], perf["macro_f1"], marker="o", label="Macro-F1")
+    plt.plot(perf["split"], perf["weighted_f1"], marker="o", label="Weighted-F1")
+    plt.ylim(0, 1.05)
+    plt.title("Overfitting diagnostic by split")
+    plt.xlabel("Split")
+    plt.ylabel("F1 score")
+    plt.legend()
     plt.tight_layout()
-    plt.savefig(figures_dir / "lowest_performing_groups.png", dpi=220)
+    plt.savefig(figures_dir / "overfitting_diagnostic.png", dpi=220)
     plt.close()
 
     print("Generated figures:")
