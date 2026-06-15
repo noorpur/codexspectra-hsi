@@ -31,3 +31,6 @@ outputs/
 
 # Local archived generated reports
 reports/archive_document_type_run/
+
+# Generated overlay panels
+reports/figures/overlays/
