@@ -1,0 +1,46 @@
+project:
+  name: codexspectra-hsi-real-hyperdoc-m2
+  seed: 1337
+  output_dir: outputs/hyperdoc_real_m2
+
+data:
+  raw_root: data/raw/hyperdoc/minicubes
+  processed_root: data/processed/hyperdoc_real_m2
+  manifest_path: data/processed/hyperdoc_real_m2/manifest.csv
+  feature_table_path: data/processed/hyperdoc_real_m2/features.csv
+  label_column: label
+  group_column: group_id
+  cube_extensions: [".h5"]
+  max_pixels_per_cube: 250
+  min_pixels_per_class: 50
+
+spectral:
+  wavelength_min_nm: 400
+  wavelength_max_nm: 1700
+  smoothing_window: 9
+  smoothing_polyorder: 2
+  use_snv: true
+  use_derivatives: true
+  pca_components: 32
+
+split:
+  test_size: 0.20
+  val_size: 0.20
+  grouped: true
+  split_seed: 2026
+
+training:
+  metric: macro_f1
+  n_jobs: -1
+  optuna_trials: 20
+  batch_size: 128
+  epochs: 20
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 6
+  device: auto
+
+reporting:
+  figures_dir: reports/figures
+  tables_dir: reports/tables
+  model_dir: models

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import h5py
 from scipy.io import loadmat
 
 
@@ -25,6 +26,34 @@ def load_cube(path: str | Path) -> tuple[np.ndarray, np.ndarray | None]:
         cube = obj[cube_key]
         if "wavelengths" in obj:
             wavelengths = obj["wavelengths"]
+    elif suffix in {".h5", ".hdf5"}:
+        with h5py.File(path, "r") as f:
+            if "DataCube" in f:
+                cube = f["DataCube"][()]
+            else:
+                candidates = []
+                def collect(_name, obj):
+                    if isinstance(obj, h5py.Dataset) and len(obj.shape) == 3:
+                        candidates.append(obj)
+                f.visititems(collect)
+                if not candidates:
+                    raise ValueError(f"No 3D dataset found in {path}")
+                cube = max(candidates, key=lambda d: d.size)[()]
+
+    elif suffix in {".h5", ".hdf5"}:
+        with h5py.File(path, "r") as f:
+            if "DataCube" in f:
+                cube = f["DataCube"][()]
+            else:
+                candidates = []
+                def collect(_name, obj):
+                    if isinstance(obj, h5py.Dataset) and len(obj.shape) == 3:
+                        candidates.append(obj)
+                f.visititems(collect)
+                if not candidates:
+                    raise ValueError(f"No 3D dataset found in {path}")
+                cube = max(candidates, key=lambda d: d.size)[()]
+
     elif suffix == ".mat":
         mat: dict[str, Any] = loadmat(path)
         candidates = [v for k, v in mat.items() if not k.startswith("__") and isinstance(v, np.ndarray)]

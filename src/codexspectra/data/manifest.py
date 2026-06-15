@@ -29,15 +29,34 @@ def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
 
 
 def infer_label(path: Path) -> str:
-    parts = [p.lower() for p in path.parts]
-    known = ["ink", "substrate", "paper", "parchment", "pigment", "background", "aged"]
+    text = "/".join(path.parts).lower()
+    known = [
+        "mock-up",
+        "genealogies",
+        "provincial",
+        "royal",
+        "ink",
+        "substrate",
+        "paper",
+        "parchment",
+        "pigment",
+        "background",
+        "aged",
+    ]
     for token in known:
-        if any(token in p for p in parts):
+        if token in text:
             return token
     return "unlabeled"
 
 
 def infer_group(path: Path, root: Path) -> str:
+    # HYPERDOC minicubes use names like 00001-SWIR-mock-up.h5.
+    # Grouping by the numeric document ID prevents VNIR/SWIR siblings from
+    # leaking across train, validation, and test splits.
+    stem = path.stem
+    if "-" in stem and stem[:5].isdigit():
+        return stem.split("-")[0]
+
     rel = path.relative_to(root)
     if len(rel.parts) >= 2:
         return rel.parts[0]
