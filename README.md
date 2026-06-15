@@ -218,9 +218,11 @@ This repository is built so that results are reproducible without pretending tha
 - [x] Run GT-mask material classification experiment
 - [x] Add generated analysis figures and overlay visualizations
 - [x] Add final analysis report after evaluation
-- [ ] Add dense full-document prediction mode
-- [ ] Add calibrated uncertainty maps
-- [ ] Add finalized model card for release
+### Next improvements
+
+- Dense full-document prediction mode
+- Calibrated uncertainty maps
+- Release-ready model card
 
 ## License
 
