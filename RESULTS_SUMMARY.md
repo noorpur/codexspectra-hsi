@@ -1,16 +1,21 @@
-# HYPERDOC Minicube Benchmark Results
+# HYPERDOC Minicube Results Summary
 
 ## Dataset scope
 
-This benchmark uses the extracted HYPERDOC minicube dataset, not the full ParentCubes archive.
+This repository uses the extracted HYPERDOC minicube dataset, not the full ParentCubes archive.
 
-- Input: HYPERDOC `.h5` minicubes
-- Feature table: 180,000 sampled spectra
-- Split strategy: grouped by document ID to reduce VNIR/SWIR sibling leakage
-- Task: document-type classification
-- Classes: `mock-up`, `genealogies`, `provincial`, `royal`
+## Experiment 1: document-type benchmark
 
-## Baseline tuned Random Forest
+This earlier benchmark classified document-family labels from filenames:
+
+- `mock-up`
+- `genealogies`
+- `provincial`
+- `royal`
+
+It was useful for validating the pipeline, but it is not the main scientific result.
+
+### Tuned Random Forest
 
 | Metric | Value |
 |---|---:|
@@ -18,7 +23,7 @@ This benchmark uses the extracted HYPERDOC minicube dataset, not the full Parent
 | Macro-F1 | 0.5037 |
 | Weighted-F1 | 0.7565 |
 
-## Balanced Random Forest
+### Balanced Random Forest
 
 | Metric | Value |
 |---|---:|
@@ -26,24 +31,54 @@ This benchmark uses the extracted HYPERDOC minicube dataset, not the full Parent
 | Macro-F1 | 0.4943 |
 | Weighted-F1 | 0.7508 |
 
-## Honest train-only diagnostic for balanced model
+## Experiment 2: GT-mask material classification
 
-| Split | Accuracy | Macro-F1 | Weighted-F1 |
-|---|---:|---:|---:|
-| Train | 0.9616 | 0.9381 | 0.9626 |
-| Validation | 0.7501 | 0.4971 | 0.7456 |
-| Test | 0.7617 | 0.5111 | 0.7539 |
+This is the main result. It uses HYPERDOC ground-truth masks to classify sampled spectra into material/region categories.
+
+- `Ink`
+- `Pencil`
+- `Pigment`
+- `Substrate`
+
+Feature table:
+
+- 128,000 GT-mask-labeled spectra
+- 360 document groups
+- Grouped train/validation/test split
+- No document-group leakage
+
+### Tuned Random Forest
+
+| Metric | Value |
+|---|---:|
+| Accuracy | 0.9165 |
+| Macro-F1 | 0.8882 |
+| Weighted-F1 | 0.9156 |
+
+### Per-class F1
+
+| Class | F1 |
+|---|---:|
+| Ink | 0.9421 |
+| Pencil | 0.8513 |
+| Pigment | 0.8798 |
+| Substrate | 0.8797 |
 
 ## Interpretation
 
-The balanced model slightly improves minority-class behavior in the honest diagnostic, but it does not fully solve generalization. The main failure mode is poor transfer to held-out document groups, especially for `royal` and `provincial`.
+The GT-mask material classifier is substantially stronger and more useful than the document-type benchmark. The model separates ink, pencil, pigment, and substrate spectra with high macro-F1 under a document-grouped split.
 
-The current task is a document-type benchmark. The next major usability upgrade is to use HYPERDOC ground-truth masks for material or region classification rather than predicting document-family labels from filenames.
+The remaining limitations are:
+
+1. The model is trained on sampled pixels, not full-scene dense prediction.
+2. The current figures do not yet include RGB/GT/prediction overlay maps.
+3. The class labels are broad material categories; finer-grained material classes should be evaluated separately.
+4. Generalization should be tested on additional held-out manuscripts or external cultural-heritage HSI datasets.
 
 ## Recommended next steps
 
-1. Implement GT-mask material/region label extraction.
-2. Train material classifiers with document-grouped validation.
-3. Add RGB/GT/prediction overlay figures.
-4. Add per-document failure analysis.
-5. Add uncertainty maps for low-confidence regions.
+1. Add dense prediction maps for selected documents.
+2. Generate RGB + GT + prediction overlays.
+3. Add uncertainty maps.
+4. Evaluate finer-grained material classes.
+5. Add a completed model card.
