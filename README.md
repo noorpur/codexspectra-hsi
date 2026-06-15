@@ -214,9 +214,13 @@ This repository is built so that results are reproducible without pretending tha
 - [x] Group-aware validation
 - [x] Optuna tuning hooks
 - [x] Report templates
-- [ ] Run full HYPERDOC experiments
-- [ ] Add generated result figures
-- [ ] Add final model card after full evaluation
+- [x] Run HYPERDOC minicube document-type benchmark
+- [x] Run GT-mask material classification experiment
+- [x] Add generated analysis figures and overlay visualizations
+- [x] Add final analysis report after evaluation
+- [ ] Add dense full-document prediction mode
+- [ ] Add calibrated uncertainty maps
+- [ ] Add finalized model card for release
 
 ## License
 
