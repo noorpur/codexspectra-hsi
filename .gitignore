@@ -28,3 +28,6 @@ models/*.pth
 data/raw/hyperdoc/
 data/processed/
 outputs/
+
+# Local archived generated reports
+reports/archive_document_type_run/
